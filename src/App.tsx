@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { createRemoteStore } from "./firebaseStore";
+import { useAppRoute } from "./routes";
 
 const EVENT = {
   title: "Stag Pub Golf",
@@ -148,13 +149,8 @@ const EVENT = {
 const STORAGE_KEY = "pub-golf-local-scores-v1";
 
 type Scores = Record<string, number>;
-type TeamId = keyof typeof EVENT.teams;
-
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
-
-const isTeamId = (value: string): value is TeamId =>
-  Object.hasOwn(EVENT.teams, value);
 
 const readLocal = (): Scores => {
   try {
@@ -189,13 +185,11 @@ const sumPlayer = (scores: Scores, playerId: string) => {
 };
 
 function App() {
-  const params = new URLSearchParams(globalThis.location.search);
-  const mode = params.get("mode") === "organizer" ? "organizer" : "captain";
-  const eventCode = params.get("event") ?? "stag2026";
-  const requestedTeamId = (params.get("team") ?? "A").toUpperCase();
-  const teamId = isTeamId(requestedTeamId) ? requestedTeamId : undefined;
-  const teamKey = params.get("key") ?? "";
-  const team = teamId === undefined ? undefined : EVENT.teams[teamId];
+  const [route] = useAppRoute();
+  const mode = route.mode === "organizer" ? "organizer" : "captain";
+  const { eventCode, key: teamKey } = route;
+  const team =
+    route.teamId === undefined ? undefined : EVENT.teams[route.teamId];
 
   const [scores, setScores] = useState<Scores>(readLocal);
   const remote = useMemo(() => createRemoteStore(eventCode), [eventCode]);
