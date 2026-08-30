@@ -31,8 +31,20 @@ export const pubEventSchema = v.object({
   title: v.pipe(v.string(), v.nonEmpty()),
 });
 
+export const vilaSolLoopSchema = v.picklist(["Out", "Mid", "In"]);
+
+export const vilaSolHoleSchema = v.object({
+  id: v.pipe(v.string(), v.nonEmpty()),
+  loop: vilaSolLoopSchema,
+  number: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(27)),
+  par: v.pipe(v.number(), v.integer(), v.minValue(3), v.maxValue(5)),
+  si: v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(18)),
+});
+
 export type Player = v.InferOutput<typeof playerSchema>;
 export type PubEvent = v.InferOutput<typeof pubEventSchema>;
 export type PubHole = v.InferOutput<typeof pubHoleSchema>;
 export type Team = v.InferOutput<typeof teamSchema>;
 export type TeamId = v.InferOutput<typeof teamIdSchema>;
+export type VilaSolHole = v.InferOutput<typeof vilaSolHoleSchema>;
+export type VilaSolLoop = v.InferOutput<typeof vilaSolLoopSchema>;
