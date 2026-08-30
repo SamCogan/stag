@@ -19,7 +19,7 @@ createRoot(rootElement).render(
   </StrictMode>,
 );
 
-if ("serviceWorker" in globalThis.navigator) {
+if (import.meta.env.PROD && "serviceWorker" in globalThis.navigator) {
   globalThis.addEventListener("load", () => {
     void globalThis.navigator.serviceWorker.register(
       `${import.meta.env.BASE_URL}sw.js`,
