@@ -1,7 +1,15 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, off, onValue, ref, update } from "firebase/database";
+import type { Database } from "firebase/database";
 
-let db = null;
+type Scores = Record<string, number>;
+
+export interface RemoteStore {
+  subscribe(callback: (scores: Scores) => void): () => void;
+  update(patch: Scores): Promise<void>;
+}
+
+let db: Database | null = null;
 
 const config = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -13,10 +21,15 @@ const config = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-const isConfigured = Object.values(config).every(Boolean);
+const isCompleteConfig = (
+  value: typeof config,
+): value is Record<keyof typeof config, string> =>
+  Object.values(value).every(
+    (entry): entry is string => typeof entry === "string" && entry.length > 0,
+  );
 
-const getDb = () => {
-  if (!isConfigured) {
+const getDb = (): Database | null => {
+  if (!isCompleteConfig(config)) {
     return null;
   }
 
@@ -28,7 +41,20 @@ const getDb = () => {
   return db;
 };
 
-export const createRemoteStore = (eventCode) => {
+const toScores = (value: unknown): Scores => {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return {};
+  }
+
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      (entry): entry is [string, number] =>
+        typeof entry[1] === "number" && Number.isFinite(entry[1]),
+    ),
+  );
+};
+
+export const createRemoteStore = (eventCode: string): RemoteStore | null => {
   const database = getDb();
   if (!database || !eventCode) {
     return null;
@@ -39,7 +65,7 @@ export const createRemoteStore = (eventCode) => {
   return {
     subscribe(callback) {
       const listener = onValue(root, (snapshot) => {
-        callback(snapshot.val() || {});
+        callback(toScores(snapshot.val()));
       });
 
       return () => off(root, "value", listener);

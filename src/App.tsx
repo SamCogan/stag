@@ -147,21 +147,43 @@ const EVENT = {
 
 const STORAGE_KEY = "pub-golf-local-scores-v1";
 
-const readLocal = () => {
+type Scores = Record<string, number>;
+type TeamId = keyof typeof EVENT.teams;
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const isTeamId = (value: string): value is TeamId =>
+  Object.hasOwn(EVENT.teams, value);
+
+const readLocal = (): Scores => {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}");
-    return parsed && typeof parsed === "object" ? parsed : {};
+    const parsed: unknown = JSON.parse(
+      localStorage.getItem(STORAGE_KEY) ?? "{}",
+    );
+    if (!isRecord(parsed)) {
+      return {};
+    }
+
+    return Object.fromEntries(
+      Object.entries(parsed).filter(
+        (entry): entry is [string, number] =>
+          typeof entry[1] === "number" && Number.isFinite(entry[1]),
+      ),
+    );
   } catch {
     return {};
   }
 };
 
-const scoreKey = (playerId, holeId) => `${playerId}::${holeId}`;
+const scoreKey = (playerId: string, holeId: string) => `${playerId}::${holeId}`;
 
-const sumPlayer = (scores, playerId) => {
+const sumPlayer = (scores: Scores, playerId: string) => {
   return EVENT.holes.reduce((acc, hole) => {
     const value = scores[scoreKey(playerId, hole.id)];
-    return acc + (Number.isFinite(value) ? value : 0);
+    return (
+      acc + (typeof value === "number" && Number.isFinite(value) ? value : 0)
+    );
   }, 0);
 };
 
@@ -169,11 +191,12 @@ function App() {
   const params = new URLSearchParams(window.location.search);
   const mode = params.get("mode") === "organizer" ? "organizer" : "captain";
   const eventCode = params.get("event") || "stag2026";
-  const teamId = (params.get("team") || "A").toUpperCase();
+  const requestedTeamId = (params.get("team") ?? "A").toUpperCase();
+  const teamId = isTeamId(requestedTeamId) ? requestedTeamId : undefined;
   const teamKey = params.get("key") || "";
-  const team = EVENT.teams[teamId];
+  const team = teamId === undefined ? undefined : EVENT.teams[teamId];
 
-  const [scores, setScores] = useState(readLocal);
+  const [scores, setScores] = useState<Scores>(readLocal);
   const [networkState, setNetworkState] = useState("local-only");
 
   useEffect(() => {
@@ -198,7 +221,11 @@ function App() {
   const remote = useMemo(() => createRemoteStore(eventCode), [eventCode]);
   const canEdit = mode === "captain" && team && team.key === teamKey;
 
-  const updateScore = async (playerId, holeId, delta) => {
+  const updateScore = async (
+    playerId: string,
+    holeId: string,
+    delta: number,
+  ) => {
     const key = scoreKey(playerId, holeId);
     const current = Number(scores[key] || 0);
     const next = Math.max(1, current + delta);
@@ -210,7 +237,11 @@ function App() {
     }
   };
 
-  const setExactScore = async (playerId, holeId, value) => {
+  const setExactScore = async (
+    playerId: string,
+    holeId: string,
+    value: string,
+  ) => {
     const asNumber = Number(value);
     if (!Number.isFinite(asNumber) || asNumber < 1) {
       return;
@@ -238,14 +269,14 @@ function App() {
     })
     .sort((a, b) => a.total - b.total);
 
-  const drinksLegend = EVENT.holes.reduce((acc, hole) => {
-    if (
-      !acc.find((entry) => entry.name === hole.name && entry.par === hole.par)
-    ) {
-      acc.push({ name: hole.name, par: hole.par });
-    }
-    return acc;
-  }, []);
+  const drinksLegend = Array.from(
+    new Map(
+      EVENT.holes.map((hole) => [
+        `${hole.name}-${hole.par}`,
+        { name: hole.name, par: hole.par },
+      ]),
+    ).values(),
+  );
 
   return (
     <div className="app-shell">
