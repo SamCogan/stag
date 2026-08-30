@@ -3,12 +3,15 @@ import type { Linter } from "eslint";
 import js from "@eslint/js";
 import prettierConfig from "eslint-config-prettier/flat";
 import { flatConfigs as importXFlatConfigs } from "eslint-plugin-import-x";
+import jest from "eslint-plugin-jest";
+import jestDom from "eslint-plugin-jest-dom";
 import jsxA11y from "eslint-plugin-jsx-a11y";
 import promise from "eslint-plugin-promise";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 import reactRefreshPlugin from "eslint-plugin-react-refresh";
 import sonarjs, { configs as sonarConfigs } from "eslint-plugin-sonarjs";
+import testingLibrary from "eslint-plugin-testing-library";
 import unicorn from "eslint-plugin-unicorn";
 import globals from "globals";
 import { configs as typescriptEslintConfigs } from "typescript-eslint";
@@ -112,6 +115,37 @@ export default defineConfig([
     files: ["src/viteEnv.d.ts"],
     rules: {
       "unicorn/prevent-abbreviations": "off",
+    },
+  },
+  {
+    files: ["src/**/*.test.{ts,tsx}", "src/test/**/*.ts"],
+    extends: [
+      jest.configs["flat/recommended"],
+      jest.configs["flat/style"],
+      testingLibrary.configs["flat/react"],
+      jestDom.configs["flat/recommended"],
+    ],
+    settings: {
+      jest: {
+        version: 29,
+      },
+    },
+    rules: {
+      "max-lines": [
+        "error",
+        { max: 350, skipBlankLines: true, skipComments: true },
+      ],
+      "max-lines-per-function": [
+        "error",
+        { max: 120, skipBlankLines: true, skipComments: true },
+      ],
+      "max-statements": ["error", 60],
+    },
+  },
+  {
+    files: ["src/test/setup.ts"],
+    rules: {
+      "testing-library/no-manual-cleanup": "off",
     },
   },
   {

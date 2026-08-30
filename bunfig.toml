@@ -1,0 +1,7 @@
+[test]
+preload = ["./src/test/registerDom.ts", "./src/test/setup.ts"]
+coverageReporter = ["text", "lcov"]
+coverageDir = "coverage"
+coverageSkipTestFiles = true
+coverageThreshold = { lines = 0.8, functions = 0.8 }
+coveragePathIgnorePatterns = ["public/**", "src/viteEnv.d.ts", "*.config.ts"]
