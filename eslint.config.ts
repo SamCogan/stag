@@ -82,6 +82,7 @@ export default defineConfig([
       },
     },
     settings: {
+      "import-x/core-modules": ["bun:test"],
       "import-x/resolver": {
         typescript: true,
       },
