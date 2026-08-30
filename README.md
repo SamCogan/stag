@@ -37,10 +37,10 @@ Change team names, players, pubs, pars, and keys in `src/App.jsx`.
 
 ```json
 {
-	"rules": {
-		".read": true,
-		".write": true
-	}
+  "rules": {
+    ".read": true,
+    ".write": true
+  }
 }
 ```
 
