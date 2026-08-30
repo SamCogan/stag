@@ -62,12 +62,13 @@ test("shows team and individual live standings for the selected loops", () => {
   expect(screen.getByText("Net to par: +8")).toBeInTheDocument();
 
   const playerPhotos = screen.getAllByRole("img");
-  expect(playerPhotos).toHaveLength(9);
+  expect(playerPhotos).toHaveLength(5);
+  expect(screen.getByText("Gross: 17 (+5)")).toBeInTheDocument();
   expect(requireElement(playerPhotos.at(0))).toHaveAttribute("alt", "Ste");
   expect(screen.getByText("1")).toBeInTheDocument();
   expect(screen.getAllByText("Bravo | 1 holes")).toHaveLength(3);
   expect(screen.getByText("-1")).toBeInTheDocument();
-  expect(screen.getAllByText(/\| 1 holes$/u)).toHaveLength(9);
+  expect(screen.getAllByText(/\| 1 holes$/u)).toHaveLength(5);
 
   unmount();
 });
