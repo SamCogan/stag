@@ -3,6 +3,7 @@ import { RankingIcon } from "@phosphor-icons/react/Ranking";
 import { STABLEFORD_CONFIG } from "./config";
 import { formatHoles, formatPoints } from "./formatting";
 import { getStablefordLeaderboard } from "./scoring";
+import { StablefordLiveScorecard } from "./StablefordLiveScorecard";
 import { Panel } from "../../components/Panel";
 import { PlayerHeadshot } from "../../components/PlayerHeadshot";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -26,7 +27,8 @@ export const StablefordLeaderboard = ({
           {STABLEFORD_CONFIG.courseName} | {STABLEFORD_CONFIG.teeName}
         </p>
       </div>
-      <div className="grid gap-2">
+      <StablefordLiveScorecard standings={standings} state={state} />
+      <div aria-label="Stableford standings" className="grid gap-2" role="list">
         {standings.map((standing) => {
           const groupId = state.groups[standing.player.id];
           const groupName =
@@ -36,6 +38,7 @@ export const StablefordLeaderboard = ({
             <div
               className="grid grid-cols-[2rem_auto_minmax(0,1fr)] items-center gap-3 rounded-box border border-base-300 bg-base-200 p-3 sm:grid-cols-[2rem_auto_minmax(0,1fr)_auto]"
               key={standing.player.id}
+              role="listitem"
             >
               <strong className="tabular-nums">{standing.position}</strong>
               <PlayerHeadshot
