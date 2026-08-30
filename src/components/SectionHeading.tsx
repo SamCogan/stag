@@ -13,8 +13,8 @@ export const SectionHeading = ({
   icon: HeadingIcon,
   title,
 }: SectionHeadingProperties) => (
-  <h2 className="card-title flex flex-wrap items-center gap-2">
+  <h2 className="card-title flex flex-nowrap items-start gap-2">
     <IconWithBadge badgeIcon={BadgeIcon} icon={HeadingIcon} size={24} />
-    {title}
+    <span className="min-w-0">{title}</span>
   </h2>
 );

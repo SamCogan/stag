@@ -1,6 +1,7 @@
 import { mergeClasses } from "../lib/mergeClasses";
 
 interface PlayerHeadshotProperties {
+  className?: string;
   image?: string;
   initials: string;
   name: string;
@@ -14,6 +15,7 @@ const sizeClasses = {
 } as const;
 
 export const PlayerHeadshot = ({
+  className,
   image,
   initials,
   name,
@@ -28,7 +30,7 @@ export const PlayerHeadshot = ({
   return image === undefined ? (
     <span
       aria-label={`${name} placeholder photo`}
-      className={mergeClasses(classes, "grid place-items-center")}
+      className={mergeClasses(classes, "grid place-items-center", className)}
       role="img"
     >
       {initials}
@@ -36,7 +38,7 @@ export const PlayerHeadshot = ({
   ) : (
     <img
       alt={name}
-      className={mergeClasses(classes, "object-cover")}
+      className={mergeClasses(classes, "object-cover", className)}
       height={pixels}
       loading="lazy"
       src={image}
