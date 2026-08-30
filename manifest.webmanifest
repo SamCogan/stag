@@ -1,11 +1,11 @@
 {
-  "name": "Stag Pub Golf",
-  "short_name": "Pub Golf",
-  "description": "Live pub golf score tracking for captains and organizer.",
+  "name": "Ste's Stag 2026",
+  "short_name": "Stag 2026",
+  "description": "Live scoring for Pub Golf, Vila Sol Scramble, and Coollattin Stableford.",
   "start_url": ".",
   "display": "standalone",
-  "background_color": "#f4f7e8",
-  "theme_color": "#d8e7a9",
+  "background_color": "#edf4de",
+  "theme_color": "#193622",
   "icons": [
     {
       "src": "./icon-192.png",
