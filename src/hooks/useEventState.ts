@@ -32,6 +32,18 @@ export const useEventState = <State>({
 }: EventStateOptions<State>): EventStateStore<State> => {
   const [state, replaceState] = useLocalStorageState<State>(localStorageKey, {
     defaultValue: defaultState,
+    serializer: {
+      parse(value) {
+        try {
+          return parseState(JSON.parse(value) as unknown);
+        } catch {
+          return parseState(value);
+        }
+      },
+      stringify(value) {
+        return JSON.stringify(value);
+      },
+    },
   });
   const remote = useMemo(
     () => createRemoteStore(eventCode, parseState),
