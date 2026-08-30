@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import "./App.css";
+
 import { createRemoteStore } from "./firebaseStore";
+
+import "./App.css";
 
 const EVENT = {
   title: "Stag Pub Golf",
@@ -179,47 +181,45 @@ const readLocal = (): Scores => {
 const scoreKey = (playerId: string, holeId: string) => `${playerId}::${holeId}`;
 
 const sumPlayer = (scores: Scores, playerId: string) => {
-  return EVENT.holes.reduce((acc, hole) => {
+  return EVENT.holes.reduce((accumulator, hole) => {
     const value = scores[scoreKey(playerId, hole.id)];
     return (
-      acc + (typeof value === "number" && Number.isFinite(value) ? value : 0)
+      accumulator +
+      (typeof value === "number" && Number.isFinite(value) ? value : 0)
     );
   }, 0);
 };
 
 function App() {
-  const params = new URLSearchParams(window.location.search);
+  const params = new URLSearchParams(globalThis.location.search);
   const mode = params.get("mode") === "organizer" ? "organizer" : "captain";
-  const eventCode = params.get("event") || "stag2026";
+  const eventCode = params.get("event") ?? "stag2026";
   const requestedTeamId = (params.get("team") ?? "A").toUpperCase();
   const teamId = isTeamId(requestedTeamId) ? requestedTeamId : undefined;
-  const teamKey = params.get("key") || "";
+  const teamKey = params.get("key") ?? "";
   const team = teamId === undefined ? undefined : EVENT.teams[teamId];
 
   const [scores, setScores] = useState<Scores>(readLocal);
-  const [networkState, setNetworkState] = useState("local-only");
+  const remote = useMemo(() => createRemoteStore(eventCode), [eventCode]);
+  const networkState = remote === null ? "local-only" : "connected";
 
   useEffect(() => {
-    const remote = createRemoteStore(eventCode);
-    if (!remote) {
-      setNetworkState("local-only");
-      return undefined;
+    if (remote === null) {
+      return;
     }
 
-    setNetworkState("connected");
     const unsubscribe = remote.subscribe((incoming) => {
       setScores((previous) => ({ ...previous, ...incoming }));
     });
 
     return unsubscribe;
-  }, [eventCode]);
+  }, [remote]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
+    globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
   }, [scores]);
 
-  const remote = useMemo(() => createRemoteStore(eventCode), [eventCode]);
-  const canEdit = mode === "captain" && team && team.key === teamKey;
+  const canEdit = mode === "captain" && team?.key === teamKey;
 
   const updateScore = async (
     playerId: string,
@@ -227,12 +227,12 @@ function App() {
     delta: number,
   ) => {
     const key = scoreKey(playerId, holeId);
-    const current = Number(scores[key] || 0);
+    const current = scores[key] ?? 0;
     const next = Math.max(1, current + delta);
     const patch = { [key]: next };
 
-    setScores((prev) => ({ ...prev, ...patch }));
-    if (remote) {
+    setScores((previous) => ({ ...previous, ...patch }));
+    if (remote !== null) {
       await remote.update(patch);
     }
   };
@@ -249,8 +249,8 @@ function App() {
 
     const key = scoreKey(playerId, holeId);
     const patch = { [key]: asNumber };
-    setScores((prev) => ({ ...prev, ...patch }));
-    if (remote) {
+    setScores((previous) => ({ ...previous, ...patch }));
+    if (remote !== null) {
       await remote.update(patch);
     }
   };
@@ -258,7 +258,7 @@ function App() {
   const teamTotals = Object.entries(EVENT.teams)
     .map(([id, data]) => {
       const total = data.players.reduce(
-        (acc, player) => acc + sumPlayer(scores, player.id),
+        (accumulator, player) => accumulator + sumPlayer(scores, player.id),
         0,
       );
       return {
@@ -269,14 +269,14 @@ function App() {
     })
     .sort((a, b) => a.total - b.total);
 
-  const drinksLegend = Array.from(
-    new Map(
+  const drinksLegend = [
+    ...new Map(
       EVENT.holes.map((hole) => [
-        `${hole.name}-${hole.par}`,
+        `${hole.name}-${String(hole.par)}`,
         { name: hole.name, par: hole.par },
       ]),
     ).values(),
-  );
+  ];
 
   return (
     <div className="app-shell">
@@ -307,7 +307,7 @@ function App() {
                   {drinksLegend.map((drink) => (
                     <div
                       className="legend-item"
-                      key={`${drink.name}-${drink.par}`}
+                      key={`${drink.name}-${String(drink.par)}`}
                     >
                       <span>{drink.name}</span>
                       <strong>Par {drink.par}</strong>
@@ -321,7 +321,7 @@ function App() {
                     <h3>{player.name}</h3>
                     {EVENT.holes.map((hole) => {
                       const key = scoreKey(player.id, hole.id);
-                      const value = Number(scores[key] || hole.par);
+                      const value = scores[key] ?? hole.par;
                       return (
                         <div className="score-row" key={hole.id}>
                           <div>
@@ -334,9 +334,9 @@ function App() {
                             <button
                               type="button"
                               disabled={!canEdit}
-                              onClick={() =>
-                                updateScore(player.id, hole.id, -1)
-                              }
+                              onClick={() => {
+                                void updateScore(player.id, hole.id, -1);
+                              }}
                             >
                               -
                             </button>
@@ -345,18 +345,21 @@ function App() {
                               min="1"
                               value={value}
                               disabled={!canEdit}
-                              onChange={(event) =>
-                                setExactScore(
+                              aria-label={`${player.name}, ${hole.name} score`}
+                              onChange={(event) => {
+                                void setExactScore(
                                   player.id,
                                   hole.id,
                                   event.target.value,
-                                )
-                              }
+                                );
+                              }}
                             />
                             <button
                               type="button"
                               disabled={!canEdit}
-                              onClick={() => updateScore(player.id, hole.id, 1)}
+                              onClick={() => {
+                                void updateScore(player.id, hole.id, 1);
+                              }}
                             >
                               +
                             </button>

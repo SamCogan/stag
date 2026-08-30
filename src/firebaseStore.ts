@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getDatabase, off, onValue, ref, update } from "firebase/database";
+
 import type { Database } from "firebase/database";
 
 type Scores = Record<string, number>;
@@ -28,7 +29,7 @@ const isCompleteConfig = (
     (entry): entry is string => typeof entry === "string" && entry.length > 0,
   );
 
-const getDb = (): Database | null => {
+const getDatabaseInstance = (): Database | null => {
   if (!isCompleteConfig(config)) {
     return null;
   }
@@ -55,7 +56,7 @@ const toScores = (value: unknown): Scores => {
 };
 
 export const createRemoteStore = (eventCode: string): RemoteStore | null => {
-  const database = getDb();
+  const database = getDatabaseInstance();
   if (!database || !eventCode) {
     return null;
   }
@@ -68,7 +69,9 @@ export const createRemoteStore = (eventCode: string): RemoteStore | null => {
         callback(toScores(snapshot.val()));
       });
 
-      return () => off(root, "value", listener);
+      return () => {
+        off(root, "value", listener);
+      };
     },
     update(patch) {
       return update(root, patch);

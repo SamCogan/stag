@@ -1,9 +1,11 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
+
 import App from "./App";
 
-const rootElement = document.getElementById("root");
+import "./index.css";
+
+const rootElement = document.querySelector<HTMLDivElement>("#root");
 if (rootElement === null) {
   throw new Error("Root element not found");
 }
@@ -14,8 +16,10 @@ createRoot(rootElement).render(
   </StrictMode>,
 );
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    void navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`);
+if ("serviceWorker" in globalThis.navigator) {
+  globalThis.addEventListener("load", () => {
+    void globalThis.navigator.serviceWorker.register(
+      `${import.meta.env.BASE_URL}sw.js`,
+    );
   });
 }
