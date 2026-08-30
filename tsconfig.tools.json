@@ -19,5 +19,5 @@
     "useUnknownInCatchVariables": true,
     "verbatimModuleSyntax": true
   },
-  "include": ["vite.config.ts"]
+  "include": ["config/**/*.ts", "eslint.config.ts", "vite.config.ts"]
 }
