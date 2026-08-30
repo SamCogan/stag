@@ -1,20 +1,25 @@
 import { expect, test } from "bun:test";
 
-import { APP_MODES, resolveRoute, type AppMode } from "./routes";
+import { APP_MODES, resolveRoute, type RouteMode } from "./routes";
 
 const PUB_MODES = [
   ["home"],
   ["captain"],
   ["organizer"],
   ["stats"],
-] as const satisfies readonly (readonly [AppMode])[];
-const GOLF_MODES = [
+] as const satisfies readonly (readonly [RouteMode])[];
+const SCRAMBLE_MODES = [
   ["scramble"],
   ["scramble-org"],
+] as const satisfies readonly (readonly [RouteMode])[];
+const STABLEFORD_MODES = [
+  ["stableford"],
+  ["stableford-org"],
+  ["stableford-stats"],
   ["stroke"],
   ["stroke-org"],
   ["stroke-stats"],
-] as const satisfies readonly (readonly [AppMode])[];
+] as const satisfies readonly (readonly [RouteMode])[];
 
 const resolveFor = ({
   event = null,
@@ -22,7 +27,7 @@ const resolveFor = ({
   team = null,
 }: {
   event?: string | null;
-  mode?: AppMode;
+  mode?: RouteMode;
   team?: string | null;
 }) =>
   resolveRoute({
@@ -32,7 +37,7 @@ const resolveFor = ({
     team,
   });
 
-test("preserves the deployed application modes", () => {
+test("accepts canonical modes and legacy Stroke aliases", () => {
   expect(APP_MODES).toEqual([
     "home",
     "captain",
@@ -40,6 +45,9 @@ test("preserves the deployed application modes", () => {
     "stats",
     "scramble",
     "scramble-org",
+    "stableford",
+    "stableford-org",
+    "stableford-stats",
     "stroke",
     "stroke-org",
     "stroke-stats",
@@ -50,8 +58,25 @@ test.each(PUB_MODES)("%s defaults to the deployed Pub event", (mode) => {
   expect(resolveFor({ mode }).eventCode).toBe("stag2026");
 });
 
-test.each(GOLF_MODES)("%s defaults to the deployed golf event", (mode) => {
+test.each(SCRAMBLE_MODES)("%s defaults to the deployed golf event", (mode) => {
   expect(resolveFor({ mode }).eventCode).toBe("vilasol");
+});
+
+test.each(STABLEFORD_MODES)(
+  "%s resolves to the isolated Stableford event",
+  (mode) => {
+    expect(resolveFor({ event: "vilasol", mode }).eventCode).toBe(
+      "coollattin-stableford",
+    );
+  },
+);
+
+test.each([
+  ["stroke", "stableford"],
+  ["stroke-org", "stableford-org"],
+  ["stroke-stats", "stableford-stats"],
+] as const)("maps legacy %s to %s", (mode, expectedMode) => {
+  expect(resolveFor({ mode }).mode).toBe(expectedMode);
 });
 
 test.each([
@@ -67,9 +92,9 @@ test.each(["", "D", "AB", "team-a"])("omits invalid team %s", (team) => {
 });
 
 test("preserves an explicit event code", () => {
-  expect(resolveFor({ event: "custom-event", mode: "stroke" }).eventCode).toBe(
-    "custom-event",
-  );
+  expect(
+    resolveFor({ event: "custom-event", mode: "scramble" }).eventCode,
+  ).toBe("custom-event");
 });
 
 test.each(["", "   "])("falls back from empty event %p", (event) => {

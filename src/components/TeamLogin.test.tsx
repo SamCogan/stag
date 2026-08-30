@@ -28,7 +28,7 @@ const mockLocationAssign = () => {
   return { assign, assignedUrls };
 };
 
-test("offers exactly the three deployed activities", () => {
+test("offers the two team-based activities", () => {
   const { unmount } = render(<TeamLogin />);
 
   const activitySelect = screen.getByRole<HTMLSelectElement>("combobox", {
@@ -42,7 +42,6 @@ test("offers exactly the three deployed activities", () => {
   ).toEqual([
     { label: "Pub Golf", value: "pub" },
     { label: "Vila Sol Scramble", value: "scramble" },
-    { label: "Vila Sol Stroke Play", value: "stroke" },
   ]);
   unmount();
 });
@@ -64,15 +63,6 @@ test.each([
       expectedRoute: "?event=vilasol&key=TEAM2two&mode=scramble&team=B",
       password: "TEAM2two",
       teamId: "B",
-    },
-  ],
-  [
-    "Vila Sol Stroke Play",
-    {
-      activity: "stroke",
-      expectedRoute: "?event=vilasol&key=TEAM3THREE&mode=stroke&team=C",
-      password: "TEAM3THREE",
-      teamId: "C",
     },
   ],
 ] as const)(

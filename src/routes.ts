@@ -15,12 +15,19 @@ export const APP_MODES = [
   "stats",
   "scramble",
   "scramble-org",
+  "stableford",
+  "stableford-org",
+  "stableford-stats",
   "stroke",
   "stroke-org",
   "stroke-stats",
 ] as const;
 
-export type AppMode = (typeof APP_MODES)[number];
+export type RouteMode = (typeof APP_MODES)[number];
+export type AppMode = Exclude<
+  RouteMode,
+  "stroke" | "stroke-org" | "stroke-stats"
+>;
 
 export interface AppRoute {
   eventCode: string;
@@ -39,34 +46,54 @@ export const routeParsers = {
 const golfModes = new Set<AppMode>([
   "scramble",
   "scramble-org",
-  "stroke",
-  "stroke-org",
-  "stroke-stats",
+  "stableford",
+  "stableford-org",
+  "stableford-stats",
 ]);
+
+const normalizeMode = (mode: RouteMode): AppMode => {
+  if (mode === "stroke") {
+    return "stableford";
+  }
+  if (mode === "stroke-org") {
+    return "stableford-org";
+  }
+  return mode === "stroke-stats" ? "stableford-stats" : mode;
+};
+
+const getEventCode = (
+  mode: AppMode,
+  requestedEvent: string | undefined,
+): string => {
+  if (mode.startsWith("stableford")) {
+    return "coollattin-stableford";
+  }
+  if (requestedEvent === undefined || requestedEvent.length === 0) {
+    return golfModes.has(mode) ? "vilasol" : "stag2026";
+  }
+  return requestedEvent;
+};
 
 export const resolveRoute = (
   values: Readonly<{
     event: string | null;
     key: string;
-    mode: AppMode;
+    mode: RouteMode;
     team: string | null;
   }>,
 ): AppRoute => {
+  const mode = normalizeMode(values.mode);
   const requestedTeam = values.team?.trim().toUpperCase();
   const parsedTeam =
     requestedTeam === undefined
       ? undefined
       : v.safeParse(teamIdSchema, requestedTeam);
   const requestedEvent = values.event?.trim();
-  const defaultEventCode = golfModes.has(values.mode) ? "vilasol" : "stag2026";
 
   return {
-    eventCode:
-      requestedEvent === undefined || requestedEvent.length === 0
-        ? defaultEventCode
-        : requestedEvent,
+    eventCode: getEventCode(mode, requestedEvent),
     key: values.key,
-    mode: values.mode,
+    mode,
     ...(parsedTeam?.success === true ? { teamId: parsedTeam.output } : {}),
   };
 };

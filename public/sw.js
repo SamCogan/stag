@@ -1,4 +1,4 @@
-const CACHE_NAME = "pub-golf-cache-v2";
+const CACHE_NAME = "stag-golf-cache-v3";
 const APP_BASE = new URL(self.registration.scope).pathname.replace(/\/$/, "");
 const ASSETS = [
   `${APP_BASE}/`,

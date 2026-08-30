@@ -9,7 +9,7 @@ import { PUB_EVENT } from "../config/pubGolf";
 
 import type { TeamId } from "../config/eventSchemas";
 
-type Activity = "pub" | "scramble" | "stroke";
+type Activity = "pub" | "scramble";
 
 interface TeamLoginForm {
   activity: Activity;
@@ -22,7 +22,6 @@ const activityRoute: Readonly<
 > = {
   pub: { eventCode: "stag2026", mode: "captain" },
   scramble: { eventCode: "vilasol", mode: "scramble" },
-  stroke: { eventCode: "vilasol", mode: "stroke" },
 };
 
 export const TeamLogin = () => {
@@ -74,7 +73,6 @@ export const TeamLogin = () => {
           <select className="select w-full" {...register("activity")}>
             <option value="pub">Pub Golf</option>
             <option value="scramble">Vila Sol Scramble</option>
-            <option value="stroke">Vila Sol Stroke Play</option>
           </select>
         </label>
         <label>

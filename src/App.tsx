@@ -1,5 +1,6 @@
 import { ListNumbersIcon } from "@phosphor-icons/react/ListNumbers";
 import { UsersThreeIcon } from "@phosphor-icons/react/UsersThree";
+import useLocalStorageState from "use-local-storage-state";
 
 import { AppShell } from "./components/AppShell";
 import { OrganizerGate } from "./components/OrganizerGate";
@@ -17,10 +18,14 @@ import { ScrambleLeaderboard } from "./features/scramble/ScrambleLeaderboard";
 import { ScrambleOrganizer } from "./features/scramble/ScrambleOrganizer";
 import { ScrambleScorecard } from "./features/scramble/ScrambleScorecard";
 import { useScrambleStore } from "./features/scramble/useScrambleStore";
-import { StrokeLeaderboard } from "./features/stroke/StrokeLeaderboard";
-import { StrokeOrganizer } from "./features/stroke/StrokeOrganizer";
-import { StrokeScorecard } from "./features/stroke/StrokeScorecard";
-import { useStrokeStore } from "./features/stroke/useStrokeStore";
+import { findStablefordPlayer } from "./features/stableford/auth";
+import { STABLEFORD_IDENTITY_STORAGE_KEY } from "./features/stableford/config";
+import { StablefordLeaderboard } from "./features/stableford/StablefordLeaderboard";
+import { StablefordLogin } from "./features/stableford/StablefordLogin";
+import { StablefordOrganizer } from "./features/stableford/StablefordOrganizer";
+import { StablefordScorecard } from "./features/stableford/StablefordScorecard";
+import { StablefordSessionCard } from "./features/stableford/StablefordSessionCard";
+import { useStablefordStore } from "./features/stableford/useStablefordStore";
 import { useAppRoute } from "./routes";
 
 import type { NetworkState } from "./hooks/useEventState";
@@ -29,30 +34,49 @@ const getNetworkState = (
   mode: string,
   pub: NetworkState,
   scramble: NetworkState,
-  stroke: NetworkState,
+  stableford: NetworkState,
 ): NetworkState => {
   if (mode.startsWith("scramble")) {
     return scramble;
   }
-  if (mode.startsWith("stroke")) {
-    return stroke;
+  if (mode.startsWith("stableford")) {
+    return stableford;
   }
   return pub;
 };
+
+const hasEntries = (record: Readonly<Record<string, unknown>>): boolean =>
+  Object.keys(record).length > 0;
 
 function App() {
   const [route] = useAppRoute();
   const pub = usePubGolfStore("stag2026");
   const scramble = useScrambleStore();
-  const stroke = useStrokeStore();
+  const [stablefordPlayerId, setStablefordPlayerId, { removeItem }] =
+    useLocalStorageState<string>(STABLEFORD_IDENTITY_STORAGE_KEY);
+  const stablefordPlayer = findStablefordPlayer(stablefordPlayerId);
+  const stableford = useStablefordStore(stablefordPlayer?.id);
+  const handleStablefordAuthentication = (
+    player: NonNullable<typeof stablefordPlayer>,
+  ): void => {
+    setStablefordPlayerId(player.id);
+  };
   const teamId = route.teamId;
   const canEditTeam =
     teamId !== undefined && PUB_EVENT.teams[teamId].key === route.key;
+  const hasLiveScoringActivity = [
+    pub.state.penalties,
+    pub.state.scores,
+    scramble.state.drives,
+    scramble.state.scores,
+    stableford.state.pickups,
+    stableford.state.scores,
+  ].some((record) => hasEntries(record));
   const networkState = getNetworkState(
     route.mode,
     pub.networkState,
     scramble.networkState,
-    stroke.networkState,
+    stableford.networkState,
   );
 
   return (
@@ -66,10 +90,24 @@ function App() {
           <Panel>
             <SectionHeading icon={UsersThreeIcon} title="Live Visitor Board" />
             <p className="text-sm text-base-content/70">
-              Public live scores across all active game types.
+              {hasLiveScoringActivity
+                ? "Public live scores across all active game types."
+                : "No live scores yet. This board will update when players begin scoring."}
             </p>
           </Panel>
-          <TeamLogin />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <TeamLogin />
+            {stablefordPlayer === undefined ? (
+              <StablefordLogin
+                onAuthenticated={handleStablefordAuthentication}
+              />
+            ) : (
+              <StablefordSessionCard
+                onLogout={removeItem}
+                player={stablefordPlayer}
+              />
+            )}
+          </div>
           <div className="grid gap-4 lg:grid-cols-2">
             <PubGolfLeaderboard
               state={pub.state}
@@ -81,16 +119,11 @@ function App() {
               teamNames={scramble.teamNames}
             />
           </div>
-          <StrokeLeaderboard
-            loopCombination={scramble.loopCombination}
-            state={stroke.state}
-            teamNames={scramble.teamNames}
-          />
+          <StablefordLeaderboard state={stableford.state} />
           <OverallStandings
             loopCombination={scramble.loopCombination}
             pubState={pub.state}
             scrambleState={scramble.state}
-            strokeState={stroke.state}
             teamNames={scramble.teamNames}
           />
           <PubGolfLeaderboard
@@ -143,40 +176,38 @@ function App() {
           />
         </OrganizerGate>
       )}
-      {route.mode === "stroke" && teamId !== undefined && (
-        <StrokeScorecard
-          actions={stroke.actions}
-          canEdit={canEditTeam}
-          loopCombination={scramble.loopCombination}
-          state={stroke.state}
-          teamId={teamId}
-          teamName={scramble.teamNames[teamId]}
-        />
-      )}
-      {route.mode === "stroke-org" && (
+      {route.mode === "stableford" &&
+        (stablefordPlayer === undefined ||
+        stableford.playerActions === undefined ? (
+          <>
+            <StablefordLogin onAuthenticated={handleStablefordAuthentication} />
+            <StablefordLeaderboard state={stableford.state} />
+          </>
+        ) : (
+          <StablefordScorecard
+            actions={stableford.playerActions}
+            onLogout={removeItem}
+            player={stablefordPlayer}
+            state={stableford.state}
+          />
+        ))}
+      {route.mode === "stableford-org" && (
         <OrganizerGate>
-          <StrokeOrganizer
-            actions={stroke.actions}
-            loopActions={scramble.actions}
-            loopCombination={scramble.loopCombination}
-            state={stroke.state}
+          <StablefordOrganizer
+            actions={stableford.organizerActions}
+            state={stableford.state}
           />
         </OrganizerGate>
       )}
-      {route.mode === "stroke-stats" && (
-        <StrokeLeaderboard
-          loopCombination={scramble.loopCombination}
-          state={stroke.state}
-          teamNames={scramble.teamNames}
-        />
+      {route.mode === "stableford-stats" && (
+        <StablefordLeaderboard state={stableford.state} />
       )}
-      {teamId === undefined &&
-        ["captain", "scramble", "stroke"].includes(route.mode) && (
-          <Panel>
-            <h2 className="card-title">Choose a valid team</h2>
-            <p>Return home and sign in as Team 1, Team 2, or Team 3.</p>
-          </Panel>
-        )}
+      {teamId === undefined && ["captain", "scramble"].includes(route.mode) && (
+        <Panel>
+          <h2 className="card-title">Choose a valid team</h2>
+          <p>Return home and sign in as Team 1, Team 2, or Team 3.</p>
+        </Panel>
+      )}
     </AppShell>
   );
 }

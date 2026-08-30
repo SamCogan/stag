@@ -3,12 +3,15 @@ import { ChartLineUpIcon } from "@phosphor-icons/react/ChartLineUp";
 import { FlagPennantIcon } from "@phosphor-icons/react/FlagPennant";
 import { GolfIcon } from "@phosphor-icons/react/Golf";
 import { HouseLineIcon } from "@phosphor-icons/react/HouseLine";
+import { LockSimpleIcon } from "@phosphor-icons/react/LockSimple";
 import { WifiHighIcon } from "@phosphor-icons/react/WifiHigh";
 import { WifiSlashIcon } from "@phosphor-icons/react/WifiSlash";
 
+import { IconWithBadge } from "./IconWithBadge";
 import { stagLogo } from "../config/assets";
 
 import type { NetworkState } from "../hooks/useEventState";
+import type { Icon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 
 interface AppShellProperties {
@@ -18,7 +21,14 @@ interface AppShellProperties {
   networkState: NetworkState;
 }
 
-const navigation = [
+interface NavigationItem {
+  badgeIcon?: Icon;
+  href: string;
+  icon: Icon;
+  label: string;
+}
+
+const navigation: readonly NavigationItem[] = [
   { href: "?mode=home", icon: HouseLineIcon, label: "Back to Home" },
   {
     href: "?mode=stats&event=stag2026",
@@ -26,19 +36,21 @@ const navigation = [
     label: "Pub Stats",
   },
   {
-    href: "?mode=stroke-stats&event=vilasol",
+    href: "?mode=stableford-stats&event=coollattin-stableford",
     icon: GolfIcon,
-    label: "Stroke Stats",
+    label: "Stableford Live",
   },
   {
     href: "?mode=organizer&event=stag2026",
+    badgeIcon: LockSimpleIcon,
     icon: BeerSteinIcon,
     label: "Pub Organizer",
   },
   {
-    href: "?mode=stroke-org&event=vilasol",
+    href: "?mode=stableford-org&event=coollattin-stableford",
+    badgeIcon: LockSimpleIcon,
     icon: FlagPennantIcon,
-    label: "Golf Organizer",
+    label: "Stableford Organizer",
   },
 ] as const;
 
@@ -85,14 +97,21 @@ export const AppShell = ({
               width="96"
             />
           </div>
-          <nav aria-label="Main navigation" className="flex flex-wrap gap-2">
+          <nav
+            aria-label="Main navigation"
+            className="grid grid-cols-2 gap-2 lg:flex lg:flex-wrap"
+          >
             {navigation.map((item) => (
               <a
-                className="btn rounded-full border border-[#cce1ab80] bg-[#0b1c1057] btn-ghost text-neutral-content btn-sm"
+                className="btn w-full min-w-0 rounded-full border border-[#cce1ab80] bg-[#0b1c1057] btn-ghost text-neutral-content btn-sm lg:w-auto"
                 href={item.href}
                 key={item.href}
               >
-                <item.icon aria-hidden="true" size={16} weight="duotone" />
+                <IconWithBadge
+                  badgeIcon={item.badgeIcon}
+                  icon={item.icon}
+                  size={16}
+                />
                 {item.label}
               </a>
             ))}

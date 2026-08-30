@@ -4,7 +4,7 @@ import { render, screen } from "@testing-library/react";
 
 import { OverallStandings } from "./OverallStandings";
 import { EMPTY_PUB_STATE } from "../state/eventState";
-import { EMPTY_SCRAMBLE_STATE, EMPTY_STROKE_STATE } from "../state/golfState";
+import { EMPTY_SCRAMBLE_STATE } from "../state/golfState";
 
 import type { TeamNames } from "../state/golfState";
 
@@ -28,7 +28,6 @@ test("shows negative, even, and positive combined standings", () => {
           "C::v1": 5,
         },
       }}
-      strokeState={EMPTY_STROKE_STATE}
       teamNames={TEAM_NAMES}
     />,
   );
@@ -51,7 +50,6 @@ test("shows an empty message before scoring starts", () => {
       loopCombination="Out+Mid"
       pubState={EMPTY_PUB_STATE}
       scrambleState={EMPTY_SCRAMBLE_STATE}
-      strokeState={EMPTY_STROKE_STATE}
       teamNames={TEAM_NAMES}
     />,
   );
