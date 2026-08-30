@@ -48,6 +48,7 @@ export const applicationRules = {
     "error",
     { allowConstantLoopConditions: "only-allowed-literals" },
   ],
+  "better-tailwindcss/enforce-consistent-line-wrapping": "off",
   "import-x/first": "error",
   "import-x/newline-after-import": "error",
   "import-x/no-cycle": "error",
