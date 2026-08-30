@@ -1,394 +1,176 @@
-import { useEffect, useMemo } from "react";
-import useLocalStorageState from "use-local-storage-state";
+import { UsersThreeIcon } from "@phosphor-icons/react/UsersThree";
 
-import { createRemoteStore } from "./firebaseStore";
+import { AppShell } from "./components/AppShell";
+import { OrganizerGate } from "./components/OrganizerGate";
+import { OverallStandings } from "./components/OverallStandings";
+import { Panel } from "./components/Panel";
+import { SectionHeading } from "./components/SectionHeading";
+import { TeamLogin } from "./components/TeamLogin";
+import { PUB_EVENT } from "./config/pubGolf";
+import { PubGolfLeaderboard } from "./features/pubGolf/PubGolfLeaderboard";
+import { PubGolfOrganizer } from "./features/pubGolf/PubGolfOrganizer";
+import { PubGolfScorecard } from "./features/pubGolf/PubGolfScorecard";
+import { PubGolfStats } from "./features/pubGolf/PubGolfStats";
+import { usePubGolfStore } from "./features/pubGolf/usePubGolfStore";
+import { ScrambleLeaderboard } from "./features/scramble/ScrambleLeaderboard";
+import { ScrambleOrganizer } from "./features/scramble/ScrambleOrganizer";
+import { ScrambleScorecard } from "./features/scramble/ScrambleScorecard";
+import { useScrambleStore } from "./features/scramble/useScrambleStore";
+import { StrokeLeaderboard } from "./features/stroke/StrokeLeaderboard";
+import { StrokeOrganizer } from "./features/stroke/StrokeOrganizer";
+import { StrokeScorecard } from "./features/stroke/StrokeScorecard";
+import { useStrokeStore } from "./features/stroke/useStrokeStore";
 import { useAppRoute } from "./routes";
-import {
-  EMPTY_PUB_STATE,
-  parsePubState,
-  PUB_LOCAL_STORAGE_KEY,
-  type PubState,
-} from "./state/eventState";
 
-const EVENT = {
-  title: "Stag Pub Golf",
-  holes: [
-    {
-      id: "h1",
-      name: "Half Pint Beer / Small Mixer",
-      pub: "Pub 1 (Ease In) | Hole 1",
-      par: 3,
-    },
-    {
-      id: "h2",
-      name: "Baby Guinness Shot",
-      pub: "Pub 1 (Ease In) | Hole 2",
-      par: 2,
-    },
-    {
-      id: "h3",
-      name: "Half Pint Beer / Small Mixer",
-      pub: "Pub 1 (Ease In) | Hole 3",
-      par: 3,
-    },
-    {
-      id: "h4",
-      name: "Vodka & Mixer (single)",
-      pub: "Pub 1 (Ease In) | Hole 4",
-      par: 3,
-    },
-    {
-      id: "h5",
-      name: "Half Pint Beer / Small Mixer",
-      pub: "Pub 1 (Ease In) | Hole 5",
-      par: 3,
-    },
-    {
-      id: "h6",
-      name: "Half Pint Beer / Small Mixer",
-      pub: "Pub 1 (Ease In) | Hole 6",
-      par: 3,
-    },
-    {
-      id: "h7",
-      name: "Pint Beer / Long Drink",
-      pub: "Pub 2 (Steady) | Hole 7",
-      par: 4,
-    },
-    {
-      id: "h8",
-      name: "Gin & Tonic (single)",
-      pub: "Pub 2 (Steady) | Hole 8",
-      par: 3,
-    },
-    {
-      id: "h9",
-      name: "Half Pint Beer / Small Mixer",
-      pub: "Pub 2 (Steady) | Hole 9",
-      par: 3,
-    },
-    {
-      id: "h10",
-      name: "Pint Beer / Long Drink",
-      pub: "Pub 2 (Steady) | Hole 10",
-      par: 4,
-    },
-    {
-      id: "h11",
-      name: "Vodka & Mixer (single)",
-      pub: "Pub 2 (Steady) | Hole 11",
-      par: 3,
-    },
-    {
-      id: "h12",
-      name: "Half Pint Beer / Small Mixer",
-      pub: "Pub 2 (Steady) | Hole 12",
-      par: 3,
-    },
-    {
-      id: "h13",
-      name: "Half Pint Beer / Small Mixer",
-      pub: "Pub 3 (Finish Strong) | Hole 13",
-      par: 3,
-    },
-    {
-      id: "h14",
-      name: "Baby Guinness Shot",
-      pub: "Pub 3 (Finish Strong) | Hole 14",
-      par: 2,
-    },
-    {
-      id: "h15",
-      name: "Half Pint Beer / Small Mixer",
-      pub: "Pub 3 (Finish Strong) | Hole 15",
-      par: 3,
-    },
-    {
-      id: "h16",
-      name: "Gin & Tonic (single)",
-      pub: "Pub 3 (Finish Strong) | Hole 16",
-      par: 3,
-    },
-    {
-      id: "h17",
-      name: "Choice Drink (light)",
-      pub: "Pub 3 (Finish Strong) | Hole 17",
-      par: 3,
-    },
-    {
-      id: "h18",
-      name: "Pint Beer / Long Drink",
-      pub: "Pub 3 (Finish Strong) | Hole 18",
-      par: 4,
-    },
-  ],
-  teams: {
-    A: {
-      label: "Team A",
-      key: "alpha123",
-      players: [
-        { id: "a1", name: "Player A1" },
-        { id: "a2", name: "Player A2" },
-        { id: "a3", name: "Player A3" },
-      ],
-    },
-    B: {
-      label: "Team B",
-      key: "bravo123",
-      players: [
-        { id: "b1", name: "Player B1" },
-        { id: "b2", name: "Player B2" },
-        { id: "b3", name: "Player B3" },
-      ],
-    },
-    C: {
-      label: "Team C",
-      key: "charlie123",
-      players: [
-        { id: "c1", name: "Player C1" },
-        { id: "c2", name: "Player C2" },
-        { id: "c3", name: "Player C3" },
-      ],
-    },
-  },
-};
+import type { NetworkState } from "./hooks/useEventState";
 
-type Scores = Record<string, number>;
-
-const scoreKey = (playerId: string, holeId: string) => `${playerId}::${holeId}`;
-
-const sumPlayer = (scores: Scores, playerId: string) => {
-  return EVENT.holes.reduce((accumulator, hole) => {
-    const value = scores[scoreKey(playerId, hole.id)];
-    return (
-      accumulator +
-      (typeof value === "number" && Number.isFinite(value) ? value : 0)
-    );
-  }, 0);
+const getNetworkState = (
+  mode: string,
+  pub: NetworkState,
+  scramble: NetworkState,
+  stroke: NetworkState,
+): NetworkState => {
+  if (mode.startsWith("scramble")) {
+    return scramble;
+  }
+  if (mode.startsWith("stroke")) {
+    return stroke;
+  }
+  return pub;
 };
 
 function App() {
   const [route] = useAppRoute();
-  const mode = route.mode === "organizer" ? "organizer" : "captain";
-  const { eventCode, key: teamKey } = route;
-  const team =
-    route.teamId === undefined ? undefined : EVENT.teams[route.teamId];
-
-  const [pubState, setPubState] = useLocalStorageState<PubState>(
-    PUB_LOCAL_STORAGE_KEY,
-    { defaultValue: EMPTY_PUB_STATE },
+  const pub = usePubGolfStore("stag2026");
+  const scramble = useScrambleStore();
+  const stroke = useStrokeStore();
+  const teamId = route.teamId;
+  const canEditTeam =
+    teamId !== undefined && PUB_EVENT.teams[teamId].key === route.key;
+  const networkState = getNetworkState(
+    route.mode,
+    pub.networkState,
+    scramble.networkState,
+    stroke.networkState,
   );
-  const { scores } = pubState;
-  const remote = useMemo(
-    () => createRemoteStore(eventCode, parsePubState),
-    [eventCode],
-  );
-  const networkState = remote === null ? "local-only" : "connected";
-
-  useEffect(() => {
-    if (remote === null) {
-      return;
-    }
-
-    const unsubscribe = remote.subscribe((incoming) => {
-      setPubState(incoming);
-    });
-
-    return unsubscribe;
-  }, [remote, setPubState]);
-
-  const canEdit = mode === "captain" && team?.key === teamKey;
-
-  const updateScore = async (
-    playerId: string,
-    holeId: string,
-    delta: number,
-  ) => {
-    const key = scoreKey(playerId, holeId);
-    const current = scores[key] ?? 0;
-    const next = Math.max(1, current + delta);
-    const patch = { [key]: next };
-
-    setPubState((previous) => ({
-      ...previous,
-      scores: { ...previous.scores, ...patch },
-    }));
-    if (remote !== null) {
-      await remote.update({ [`scores/${key}`]: next });
-    }
-  };
-
-  const setExactScore = async (
-    playerId: string,
-    holeId: string,
-    value: string,
-  ) => {
-    const asNumber = Number(value);
-    if (!Number.isFinite(asNumber) || asNumber < 1) {
-      return;
-    }
-
-    const key = scoreKey(playerId, holeId);
-    const patch = { [key]: asNumber };
-    setPubState((previous) => ({
-      ...previous,
-      scores: { ...previous.scores, ...patch },
-    }));
-    if (remote !== null) {
-      await remote.update({ [`scores/${key}`]: asNumber });
-    }
-  };
-
-  const teamTotals = Object.entries(EVENT.teams)
-    .map(([id, data]) => {
-      const total = data.players.reduce(
-        (accumulator, player) => accumulator + sumPlayer(scores, player.id),
-        0,
-      );
-      return {
-        id,
-        label: data.label,
-        total,
-      };
-    })
-    .sort((a, b) => a.total - b.total);
-
-  const drinksLegend = [
-    ...new Map(
-      EVENT.holes.map((hole) => [
-        `${hole.name}-${String(hole.par)}`,
-        { name: hole.name, par: hole.par },
-      ]),
-    ).values(),
-  ];
 
   return (
-    <div className="app-shell">
-      <header className="hero">
-        <p className="eyebrow">Live Scoring MVP</p>
-        <h1>{EVENT.title}</h1>
-        <p className="subtitle">
-          Event: {eventCode} | Mode: {mode}
-        </p>
-        <p className="status-pill">Sync: {networkState}</p>
-      </header>
-
-      {mode === "captain" && (
-        <section className="panel">
-          <h2>Captain Scoring</h2>
-          {!team && (
-            <p>Invalid team. Use team=A, team=B or team=C in the URL.</p>
-          )}
-          {team && (
-            <>
-              <p className="muted">
-                Team: {team.label} |{" "}
-                {canEdit ? "Edit enabled" : "Read only (wrong key)"}
-              </p>
-              <div className="legend-panel">
-                <h3>Drinks & Pars</h3>
-                <div className="legend-grid">
-                  {drinksLegend.map((drink) => (
-                    <div
-                      className="legend-item"
-                      key={`${drink.name}-${String(drink.par)}`}
-                    >
-                      <span>{drink.name}</span>
-                      <strong>Par {drink.par}</strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="card-grid">
-                {team.players.map((player) => (
-                  <article key={player.id} className="score-card">
-                    <h3>{player.name}</h3>
-                    {EVENT.holes.map((hole) => {
-                      const key = scoreKey(player.id, hole.id);
-                      const value = scores[key] ?? hole.par;
-                      return (
-                        <div className="score-row" key={hole.id}>
-                          <div>
-                            <strong>{hole.name}</strong>
-                            <p>
-                              {hole.pub} | Par {hole.par}
-                            </p>
-                          </div>
-                          <div className="controls">
-                            <button
-                              type="button"
-                              disabled={!canEdit}
-                              onClick={() => {
-                                void updateScore(player.id, hole.id, -1);
-                              }}
-                            >
-                              -
-                            </button>
-                            <input
-                              type="number"
-                              min="1"
-                              value={value}
-                              disabled={!canEdit}
-                              aria-label={`${player.name}, ${hole.name} score`}
-                              onChange={(event) => {
-                                void setExactScore(
-                                  player.id,
-                                  hole.id,
-                                  event.target.value,
-                                );
-                              }}
-                            />
-                            <button
-                              type="button"
-                              disabled={!canEdit}
-                              onClick={() => {
-                                void updateScore(player.id, hole.id, 1);
-                              }}
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                    <p className="player-total">
-                      Total: {sumPlayer(scores, player.id)}
-                    </p>
-                  </article>
-                ))}
-              </div>
-            </>
-          )}
-        </section>
+    <AppShell
+      eventCode={route.eventCode}
+      mode={route.mode}
+      networkState={networkState}
+    >
+      {route.mode === "home" && (
+        <>
+          <Panel>
+            <SectionHeading icon={UsersThreeIcon} title="Live Visitor Board" />
+            <p className="text-sm text-base-content/70">
+              Public live scores across all active game types.
+            </p>
+          </Panel>
+          <TeamLogin />
+          <div className="grid gap-4 lg:grid-cols-2">
+            <PubGolfLeaderboard
+              state={pub.state}
+              teamNames={scramble.teamNames}
+            />
+            <ScrambleLeaderboard
+              loopCombination={scramble.loopCombination}
+              state={scramble.state}
+              teamNames={scramble.teamNames}
+            />
+          </div>
+          <StrokeLeaderboard
+            loopCombination={scramble.loopCombination}
+            state={stroke.state}
+            teamNames={scramble.teamNames}
+          />
+          <OverallStandings
+            loopCombination={scramble.loopCombination}
+            pubState={pub.state}
+            scrambleState={scramble.state}
+            strokeState={stroke.state}
+            teamNames={scramble.teamNames}
+          />
+        </>
       )}
-
-      <section className="panel">
-        <h2>Organizer Leaderboard</h2>
-        <div className="leaderboard">
-          {teamTotals.map((entry, index) => (
-            <div className="leader-row" key={entry.id}>
-              <span>{index + 1}</span>
-              <span>{entry.label}</span>
-              <strong>{entry.total}</strong>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <section className="panel notes">
-        <h2>Captain Links</h2>
-        <p>
-          Share one link with each captain. These are default keys; change them
-          in src/App.jsx before event day.
-        </p>
-        <ul>
-          <li>?mode=captain&event=stag2026&team=A&key=alpha123</li>
-          <li>?mode=captain&event=stag2026&team=B&key=bravo123</li>
-          <li>?mode=captain&event=stag2026&team=C&key=charlie123</li>
-          <li>?mode=organizer&event=stag2026</li>
-        </ul>
-      </section>
-    </div>
+      {route.mode === "captain" && teamId !== undefined && (
+        <PubGolfScorecard
+          actions={pub.actions}
+          canEdit={canEditTeam}
+          state={pub.state}
+          teamId={teamId}
+          teamName={scramble.teamNames[teamId]}
+        />
+      )}
+      {route.mode === "stats" && (
+        <PubGolfStats state={pub.state} teamNames={scramble.teamNames} />
+      )}
+      {route.mode === "organizer" && (
+        <OrganizerGate>
+          <PubGolfOrganizer
+            actions={pub.actions}
+            state={pub.state}
+            teamActions={scramble.actions}
+            teamNames={scramble.teamNames}
+          />
+        </OrganizerGate>
+      )}
+      {route.mode === "scramble" && teamId !== undefined && (
+        <ScrambleScorecard
+          actions={scramble.actions}
+          canEdit={canEditTeam}
+          loopCombination={scramble.loopCombination}
+          state={scramble.state}
+          teamId={teamId}
+          teamName={scramble.teamNames[teamId]}
+        />
+      )}
+      {route.mode === "scramble-org" && (
+        <OrganizerGate>
+          <ScrambleOrganizer
+            actions={scramble.actions}
+            loopCombination={scramble.loopCombination}
+            state={scramble.state}
+            teamNames={scramble.teamNames}
+          />
+        </OrganizerGate>
+      )}
+      {route.mode === "stroke" && teamId !== undefined && (
+        <StrokeScorecard
+          actions={stroke.actions}
+          canEdit={canEditTeam}
+          loopCombination={scramble.loopCombination}
+          state={stroke.state}
+          teamId={teamId}
+          teamName={scramble.teamNames[teamId]}
+        />
+      )}
+      {route.mode === "stroke-org" && (
+        <OrganizerGate>
+          <StrokeOrganizer
+            actions={stroke.actions}
+            loopActions={scramble.actions}
+            loopCombination={scramble.loopCombination}
+            state={stroke.state}
+          />
+        </OrganizerGate>
+      )}
+      {route.mode === "stroke-stats" && (
+        <StrokeLeaderboard
+          loopCombination={scramble.loopCombination}
+          state={stroke.state}
+          teamNames={scramble.teamNames}
+        />
+      )}
+      {teamId === undefined &&
+        ["captain", "scramble", "stroke"].includes(route.mode) && (
+          <Panel>
+            <h2 className="card-title">Choose a valid team</h2>
+            <p>Return home and sign in as Team 1, Team 2, or Team 3.</p>
+          </Panel>
+        )}
+    </AppShell>
   );
 }
 
