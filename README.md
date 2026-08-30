@@ -55,8 +55,11 @@ Firebase Realtime Database paths are rooted at `events/<event-code>`.
 | Coollattin Stableford | `coollattin-stableford` | `coollattin-stableford-state-v1`       |
 | Stableford identity   | N/A                     | `coollattin-stableford-player-v1`      |
 | Organizer session     | N/A                     | `organizer-auth-v1` in session storage |
+| Color theme           | N/A                     | `stag-theme`                           |
 
 When Firebase configuration is absent, the app runs in local-only mode. Local writes are optimistic and use the same runtime validation as remote snapshots.
+
+The interface starts with the device color-scheme preference. A manual light or dark selection is stored in `stag-theme` and restored on later visits.
 
 ## Local development
 
