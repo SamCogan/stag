@@ -18,10 +18,10 @@ export interface EventStateStore<State> {
   networkState: NetworkState;
   replaceState: Dispatch<SetStateAction<State>>;
   state: State;
-  updateState(
+  updateState: (
     patch: Readonly<Record<string, unknown>>,
     updater: (previous: State) => State,
-  ): Promise<void>;
+  ) => Promise<void>;
 }
 
 export const useEventState = <State>({
