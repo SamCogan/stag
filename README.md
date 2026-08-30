@@ -24,9 +24,9 @@ Change team names, players, pubs, pars, and keys in `src/App.jsx`.
 
 ## Local run
 
-1. `npm install`
+1. `bun install`
 2. Copy `.env.example` to `.env` and fill Firebase values.
-3. `npm run dev`
+3. `bun run dev`
 
 ## Firebase setup (no auth)
 
@@ -49,10 +49,10 @@ Use stricter rules before using this beyond a private event.
 ## GitHub Pages deploy
 
 1. Create a GitHub repo and push this folder.
-2. Run `npm run deploy` (uses `gh-pages` package).
+2. Run `bun run deploy` (uses `gh-pages` package).
 3. In repo settings, enable GitHub Pages for the `gh-pages` branch.
 4. Share the final URL + query links with captains.
 
 ## Build
 
-`npm run build`
+`bun run build`
