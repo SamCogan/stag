@@ -8,6 +8,7 @@ import { WifiHighIcon } from "@phosphor-icons/react/WifiHigh";
 import { WifiSlashIcon } from "@phosphor-icons/react/WifiSlash";
 
 import { IconWithBadge } from "./IconWithBadge";
+import { ThemeToggle } from "./ThemeToggle";
 import { stagLogo } from "../config/assets";
 
 import type { NetworkState } from "../hooks/useEventState";
@@ -58,33 +59,40 @@ export const AppShell = ({
   children,
   networkState,
 }: AppShellProperties) => (
-  <div className="min-h-screen bg-[radial-gradient(circle_at_10%_10%,rgba(255,243,214,0.7),transparent_36%),radial-gradient(circle_at_85%_0%,rgba(205,168,92,0.25),transparent_28%),linear-gradient(165deg,#edf4de_0%,#dbe9ca_42%,#c7dcaf_100%)] p-2 font-sans leading-[1.4] text-base-content sm:p-4">
+  <div className="min-h-screen bg-base-200 bg-stag-page p-2 font-sans leading-[1.4] text-base-content sm:p-4">
     <div className="mx-auto grid w-full max-w-[1100px] gap-4">
-      <header className="rounded-[18px] border border-[#d0e6ac59] bg-[linear-gradient(120deg,rgba(17,40,24,0.95),rgba(41,80,50,0.9))] p-[1.4rem] text-neutral-content shadow-[0_16px_36px_rgba(16,36,20,0.3)]">
+      <header className="rounded-[18px] border border-(--stag-header-border) bg-neutral bg-(image:--stag-header-background) p-[1.4rem] text-neutral-content shadow-(--stag-header-shadow)">
         <div className="grid gap-4">
           <div className="flex items-center justify-between gap-4">
             <div className="min-w-0">
-              <p className="text-xs font-bold tracking-widest text-[#d9e8b9] uppercase">
+              <p className="text-xs font-bold tracking-widest text-(--stag-header-label) uppercase">
                 Live Scoring
               </p>
               <h1 className="text-[1.55rem] leading-[1.4] font-bold text-balance">
                 Ste&apos;s Stag 2026
               </h1>
-              <span
-                className="mt-3 badge border-[#cce1ab80] bg-[#0b1c1057] font-semibold text-neutral-content"
-                aria-live="polite"
-              >
-                {networkState === "connected" ? (
-                  <WifiHighIcon aria-hidden="true" size={16} weight="duotone" />
-                ) : (
-                  <WifiSlashIcon
-                    aria-hidden="true"
-                    size={16}
-                    weight="duotone"
-                  />
-                )}
-                Sync: {networkState}
-              </span>
+              <div className="mt-3 flex items-center gap-2">
+                <span
+                  className="badge h-8 border-(--stag-header-control-border) bg-(--stag-header-control-background) font-semibold text-neutral-content"
+                  aria-live="polite"
+                >
+                  {networkState === "connected" ? (
+                    <WifiHighIcon
+                      aria-hidden="true"
+                      size={16}
+                      weight="duotone"
+                    />
+                  ) : (
+                    <WifiSlashIcon
+                      aria-hidden="true"
+                      size={16}
+                      weight="duotone"
+                    />
+                  )}
+                  Sync: {networkState}
+                </span>
+                <ThemeToggle />
+              </div>
             </div>
             <img
               alt="Ste's Stag logo"
@@ -103,7 +111,7 @@ export const AppShell = ({
           >
             {navigation.map((item) => (
               <a
-                className="btn w-full min-w-0 rounded-full border border-[#cce1ab80] bg-[#0b1c1057] btn-ghost text-neutral-content btn-sm lg:w-auto"
+                className="btn w-full min-w-0 rounded-full border border-(--stag-header-control-border) bg-(--stag-header-control-background) btn-ghost text-neutral-content btn-sm lg:w-auto"
                 href={item.href}
                 key={item.href}
               >

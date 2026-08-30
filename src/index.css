@@ -4,8 +4,16 @@
   --font-sans: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
 }
 
+@utility bg-stag-page {
+  background-image:
+    var(--stag-page-warm-glow), var(--stag-page-green-glow),
+    var(--stag-page-background);
+}
+
 @plugin "daisyui" {
-  themes: stag --default;
+  themes:
+    stag --default,
+    stag-dark --prefersdark;
   logs: false;
 }
 
@@ -26,7 +34,7 @@
   --color-accent-content: #112818;
   --color-neutral: #193622;
   --color-neutral-content: #f9fce7;
-  --color-info: #5f84a2;
+  --color-info: #527590;
   --color-info-content: #ffffff;
   --color-success: #4f7d3b;
   --color-success-content: #ffffff;
@@ -34,6 +42,97 @@
   --color-warning-content: #241c0b;
   --color-error: #b94a48;
   --color-error-content: #ffffff;
+  --stag-page-warm-glow: radial-gradient(
+    circle at 10% 10%,
+    rgb(255 243 214 / 70%),
+    transparent 36%
+  );
+  --stag-page-green-glow: radial-gradient(
+    circle at 85% 0%,
+    rgb(205 168 92 / 25%),
+    transparent 28%
+  );
+  --stag-page-background: linear-gradient(
+    165deg,
+    #edf4de 0%,
+    #dbe9ca 42%,
+    #c7dcaf 100%
+  );
+  --stag-header-background: linear-gradient(
+    120deg,
+    rgb(17 40 24 / 95%),
+    rgb(41 80 50 / 90%)
+  );
+  --stag-header-border: rgb(208 230 172 / 35%);
+  --stag-header-control-background: rgb(11 28 16 / 34%);
+  --stag-header-control-border: rgb(204 225 171 / 50%);
+  --stag-header-label: #d9e8b9;
+  --stag-header-shadow: 0 16px 36px rgb(16 36 20 / 30%);
+  --stag-heading: #23412d;
+  --stag-panel-shadow: 0 12px 28px rgb(24 44 27 / 15%);
+  --radius-selector: 999px;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "stag-dark";
+  default: false;
+  prefersdark: true;
+  color-scheme: dark;
+  --color-base-100: #101a13;
+  --color-base-200: #17251b;
+  --color-base-300: #2a3e2f;
+  --color-base-content: #edf5df;
+  --color-primary: #b9d57b;
+  --color-primary-content: #17220f;
+  --color-secondary: #d6bd7b;
+  --color-secondary-content: #261d0b;
+  --color-accent: #94bc61;
+  --color-accent-content: #101a0d;
+  --color-neutral: #26382b;
+  --color-neutral-content: #f5f8e8;
+  --color-info: #76a9c3;
+  --color-info-content: #0d1b22;
+  --color-success: #7eb56a;
+  --color-success-content: #0d1b0b;
+  --color-warning: #e2ad45;
+  --color-warning-content: #251a05;
+  --color-error: #df7772;
+  --color-error-content: #2a0908;
+  --stag-page-warm-glow: radial-gradient(
+    circle at 10% 10%,
+    rgb(164 133 71 / 18%),
+    transparent 36%
+  );
+  --stag-page-green-glow: radial-gradient(
+    circle at 85% 0%,
+    rgb(127 166 85 / 18%),
+    transparent 30%
+  );
+  --stag-page-background: linear-gradient(
+    165deg,
+    #0c150f 0%,
+    #132119 45%,
+    #1a2b20 100%
+  );
+  --stag-header-background: linear-gradient(
+    120deg,
+    rgb(6 14 8 / 98%),
+    rgb(23 51 31 / 96%)
+  );
+  --stag-header-border: rgb(185 213 123 / 25%);
+  --stag-header-control-background: rgb(2 9 5 / 55%);
+  --stag-header-control-border: rgb(185 213 123 / 42%);
+  --stag-header-label: #d8eab1;
+  --stag-header-shadow: 0 18px 42px rgb(0 0 0 / 42%);
+  --stag-heading: #dcebbf;
+  --stag-panel-shadow: 0 14px 32px rgb(0 0 0 / 32%);
   --radius-selector: 999px;
   --radius-field: 0.5rem;
   --radius-box: 1rem;
