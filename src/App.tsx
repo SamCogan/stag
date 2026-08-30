@@ -1,7 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
+import useLocalStorageState from "use-local-storage-state";
 
 import { createRemoteStore } from "./firebaseStore";
 import { useAppRoute } from "./routes";
+import {
+  EMPTY_PUB_STATE,
+  parsePubState,
+  PUB_LOCAL_STORAGE_KEY,
+  type PubState,
+} from "./state/eventState";
 
 const EVENT = {
   title: "Stag Pub Golf",
@@ -146,31 +153,7 @@ const EVENT = {
   },
 };
 
-const STORAGE_KEY = "pub-golf-local-scores-v1";
-
 type Scores = Record<string, number>;
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const readLocal = (): Scores => {
-  try {
-    const parsed: unknown = JSON.parse(
-      localStorage.getItem(STORAGE_KEY) ?? "{}",
-    );
-    if (!isRecord(parsed)) {
-      return {};
-    }
-
-    return Object.fromEntries(
-      Object.entries(parsed).filter(
-        (entry): entry is [string, number] =>
-          typeof entry[1] === "number" && Number.isFinite(entry[1]),
-      ),
-    );
-  } catch {
-    return {};
-  }
-};
 
 const scoreKey = (playerId: string, holeId: string) => `${playerId}::${holeId}`;
 
@@ -191,8 +174,15 @@ function App() {
   const team =
     route.teamId === undefined ? undefined : EVENT.teams[route.teamId];
 
-  const [scores, setScores] = useState<Scores>(readLocal);
-  const remote = useMemo(() => createRemoteStore(eventCode), [eventCode]);
+  const [pubState, setPubState] = useLocalStorageState<PubState>(
+    PUB_LOCAL_STORAGE_KEY,
+    { defaultValue: EMPTY_PUB_STATE },
+  );
+  const { scores } = pubState;
+  const remote = useMemo(
+    () => createRemoteStore(eventCode, parsePubState),
+    [eventCode],
+  );
   const networkState = remote === null ? "local-only" : "connected";
 
   useEffect(() => {
@@ -201,15 +191,11 @@ function App() {
     }
 
     const unsubscribe = remote.subscribe((incoming) => {
-      setScores((previous) => ({ ...previous, ...incoming }));
+      setPubState(incoming);
     });
 
     return unsubscribe;
-  }, [remote]);
-
-  useEffect(() => {
-    globalThis.localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
-  }, [scores]);
+  }, [remote, setPubState]);
 
   const canEdit = mode === "captain" && team?.key === teamKey;
 
@@ -223,9 +209,12 @@ function App() {
     const next = Math.max(1, current + delta);
     const patch = { [key]: next };
 
-    setScores((previous) => ({ ...previous, ...patch }));
+    setPubState((previous) => ({
+      ...previous,
+      scores: { ...previous.scores, ...patch },
+    }));
     if (remote !== null) {
-      await remote.update(patch);
+      await remote.update({ [`scores/${key}`]: next });
     }
   };
 
@@ -241,9 +230,12 @@ function App() {
 
     const key = scoreKey(playerId, holeId);
     const patch = { [key]: asNumber };
-    setScores((previous) => ({ ...previous, ...patch }));
+    setPubState((previous) => ({
+      ...previous,
+      scores: { ...previous.scores, ...patch },
+    }));
     if (remote !== null) {
-      await remote.update(patch);
+      await remote.update({ [`scores/${key}`]: asNumber });
     }
   };
 

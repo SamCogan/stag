@@ -3,11 +3,9 @@ import { getDatabase, off, onValue, ref, update } from "firebase/database";
 
 import type { Database } from "firebase/database";
 
-type Scores = Record<string, number>;
-
-export interface RemoteStore {
-  subscribe(callback: (scores: Scores) => void): () => void;
-  update(patch: Scores): Promise<void>;
+export interface RemoteStore<State> {
+  subscribe(callback: (state: State) => void): () => void;
+  update(patch: Record<string, unknown>): Promise<void>;
 }
 
 let db: Database | null = null;
@@ -42,31 +40,21 @@ const getDatabaseInstance = (): Database | null => {
   return db;
 };
 
-const toScores = (value: unknown): Scores => {
-  if (typeof value !== "object" || value === null || Array.isArray(value)) {
-    return {};
-  }
-
-  return Object.fromEntries(
-    Object.entries(value).filter(
-      (entry): entry is [string, number] =>
-        typeof entry[1] === "number" && Number.isFinite(entry[1]),
-    ),
-  );
-};
-
-export const createRemoteStore = (eventCode: string): RemoteStore | null => {
+export const createRemoteStore = <State>(
+  eventCode: string,
+  parseState: (input: unknown) => State,
+): RemoteStore<State> | null => {
   const database = getDatabaseInstance();
   if (!database || !eventCode) {
     return null;
   }
 
-  const root = ref(database, `events/${eventCode}/scores`);
+  const root = ref(database, `events/${eventCode}`);
 
   return {
     subscribe(callback) {
       const listener = onValue(root, (snapshot) => {
-        callback(toScores(snapshot.val()));
+        callback(parseState(snapshot.val()));
       });
 
       return () => {
