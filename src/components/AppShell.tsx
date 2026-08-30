@@ -10,6 +10,7 @@ import { WifiSlashIcon } from "@phosphor-icons/react/WifiSlash";
 import { IconWithBadge } from "./IconWithBadge";
 import { ThemeToggle } from "./ThemeToggle";
 import { stagLogo } from "../config/assets";
+import { STABLEFORD_EVENT_CODE } from "../features/stableford/config";
 
 import type { NetworkState } from "../hooks/useEventState";
 import type { Icon } from "@phosphor-icons/react";
@@ -25,6 +26,7 @@ interface AppShellProperties {
 interface NavigationItem {
   activeModes: readonly string[];
   badgeIcon?: Icon;
+  event: "all" | "pub" | "stableford";
   href: string;
   icon: Icon;
   label: string;
@@ -34,6 +36,7 @@ interface NavigationItem {
 const navigation: readonly NavigationItem[] = [
   {
     activeModes: ["home"],
+    event: "all",
     href: "?mode=home",
     icon: HouseLineIcon,
     label: "Home",
@@ -41,6 +44,7 @@ const navigation: readonly NavigationItem[] = [
   },
   {
     activeModes: ["stats"],
+    event: "pub",
     href: "?mode=stats&event=stag2026",
     icon: ChartLineUpIcon,
     label: "Pub Stats",
@@ -48,6 +52,7 @@ const navigation: readonly NavigationItem[] = [
   },
   {
     activeModes: ["stableford-stats"],
+    event: "stableford",
     href: "?mode=stableford-stats&event=coollattin-stableford",
     icon: GolfIcon,
     label: "Stableford Live",
@@ -55,6 +60,7 @@ const navigation: readonly NavigationItem[] = [
   },
   {
     activeModes: ["organizer"],
+    event: "pub",
     href: "?mode=organizer&event=stag2026",
     badgeIcon: LockSimpleIcon,
     icon: BeerSteinIcon,
@@ -63,6 +69,7 @@ const navigation: readonly NavigationItem[] = [
   },
   {
     activeModes: ["stableford-org"],
+    event: "stableford",
     href: "?mode=stableford-org&event=coollattin-stableford",
     badgeIcon: LockSimpleIcon,
     icon: FlagPennantIcon,
@@ -72,16 +79,27 @@ const navigation: readonly NavigationItem[] = [
 ] as const;
 
 interface NavigationProperties {
+  eventCode: string;
   mode: string;
 }
 
-const DesktopNavigation = ({ mode }: NavigationProperties) => (
+const getNavigationItems = (eventCode: string): readonly NavigationItem[] =>
+  eventCode === STABLEFORD_EVENT_CODE
+    ? navigation.filter((item) => item.event !== "pub")
+    : navigation;
+
+const getNavigationHref = (item: NavigationItem, eventCode: string): string =>
+  item.activeModes.includes("home") && eventCode === STABLEFORD_EVENT_CODE
+    ? `?mode=home&event=${STABLEFORD_EVENT_CODE}`
+    : item.href;
+
+const DesktopNavigation = ({ eventCode, mode }: NavigationProperties) => (
   <nav
     aria-label="Main navigation"
     className="sticky top-4 hidden rounded-2xl border border-base-300 bg-base-100 p-2 shadow-(--stag-panel-shadow) md:block"
   >
     <ul className="menu w-full gap-1 p-0">
-      {navigation.map((item) => {
+      {getNavigationItems(eventCode).map((item) => {
         const isActive = item.activeModes.includes(mode);
         return (
           <li key={item.href}>
@@ -90,7 +108,7 @@ const DesktopNavigation = ({ mode }: NavigationProperties) => (
               className={
                 isActive ? "bg-primary text-primary-content" : undefined
               }
-              href={item.href}
+              href={getNavigationHref(item, eventCode)}
             >
               <IconWithBadge
                 badgeIcon={item.badgeIcon}
@@ -106,19 +124,19 @@ const DesktopNavigation = ({ mode }: NavigationProperties) => (
   </nav>
 );
 
-const MobileNavigation = ({ mode }: NavigationProperties) => (
+const MobileNavigation = ({ eventCode, mode }: NavigationProperties) => (
   <nav
     aria-label="Mobile navigation"
     className="dock z-50 border-t border-base-300 bg-base-100/95 pb-[max(0.5rem,env(safe-area-inset-bottom))] text-base-content shadow-lg backdrop-blur-md md:hidden"
   >
-    {navigation.map((item) => {
+    {getNavigationItems(eventCode).map((item) => {
       const isActive = item.activeModes.includes(mode);
       return (
         <a
           aria-current={isActive ? "page" : undefined}
           aria-label={item.label}
           className={isActive ? "bg-primary text-primary-content" : undefined}
-          href={item.href}
+          href={getNavigationHref(item, eventCode)}
           key={item.href}
         >
           <IconWithBadge
@@ -137,6 +155,7 @@ const MobileNavigation = ({ mode }: NavigationProperties) => (
 
 export const AppShell = ({
   children,
+  eventCode,
   mode,
   networkState,
 }: AppShellProperties) => (
@@ -189,10 +208,10 @@ export const AppShell = ({
         </div>
       </header>
       <div className="grid gap-4 md:grid-cols-[13rem_minmax(0,1fr)] md:items-start">
-        <DesktopNavigation mode={mode} />
+        <DesktopNavigation eventCode={eventCode} mode={mode} />
         <main className="grid min-w-0 content-start gap-4">{children}</main>
       </div>
     </div>
-    <MobileNavigation mode={mode} />
+    <MobileNavigation eventCode={eventCode} mode={mode} />
   </div>
 );

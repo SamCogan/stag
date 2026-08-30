@@ -3,7 +3,6 @@ import { expect, test } from "bun:test";
 import { APP_MODES, resolveRoute, type RouteMode } from "./routes";
 
 const PUB_MODES = [
-  ["home"],
   ["captain"],
   ["organizer"],
   ["stats"],
@@ -58,6 +57,10 @@ test.each(PUB_MODES)("%s defaults to the deployed Pub event", (mode) => {
   expect(resolveFor({ mode }).eventCode).toBe("stag2026");
 });
 
+test("home defaults to the Coollattin event", () => {
+  expect(resolveFor({ mode: "home" }).eventCode).toBe("coollattin-stableford");
+});
+
 test.each(SCRAMBLE_MODES)("%s defaults to the deployed golf event", (mode) => {
   expect(resolveFor({ mode }).eventCode).toBe("vilasol");
 });
@@ -98,5 +101,5 @@ test("preserves an explicit event code", () => {
 });
 
 test.each(["", "   "])("falls back from empty event %p", (event) => {
-  expect(resolveFor({ event }).eventCode).toBe("stag2026");
+  expect(resolveFor({ event }).eventCode).toBe("coollattin-stableford");
 });

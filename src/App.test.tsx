@@ -68,6 +68,10 @@ const expectRouteHeadings = (
 
 test("renders the expected application routes", () => {
   expectRouteHeadings("?mode=home", [
+    "Coollattin Individual Stableford",
+    "Stableford Player Login",
+  ]);
+  expectRouteHeadings("?event=stag2026&mode=home", [
     "Team Login",
     "Stableford Player Login",
     "Pub Golf Live",
@@ -119,12 +123,50 @@ test("renders the expected application routes", () => {
 
 test("shows an empty visitor board before scoring begins", () => {
   resetBrowserState();
-  const { container, host, unmount } = renderRoute("?mode=home");
+  const { container, host, unmount } = renderRoute("?event=stag2026&mode=home");
 
   try {
     expect(
       within(container).getByText(/No live scores yet\./u),
     ).toHaveTextContent("This board will update when players begin scoring.");
+  } finally {
+    unmount();
+    host.remove();
+    resetBrowserState();
+  }
+});
+
+test("shows only Coollattin UI on the Stableford home", () => {
+  resetBrowserState();
+  const { container, host, unmount } = renderRoute(
+    "?event=coollattin-stableford&mode=home",
+  );
+  const page = within(container);
+
+  try {
+    expect(
+      page.getByRole("heading", {
+        name: "Coollattin Individual Stableford",
+      }),
+    ).toBeInTheDocument();
+    expect(
+      page.getByRole("heading", { name: "Stableford Player Login" }),
+    ).toBeInTheDocument();
+    expect(
+      page.queryByRole("heading", { name: "Coollattin Stableford Live" }),
+    ).not.toBeInTheDocument();
+    expect(
+      page.queryByRole("heading", { name: "Team Login" }),
+    ).not.toBeInTheDocument();
+    expect(
+      page.queryByRole("heading", { name: "Pub Golf Live" }),
+    ).not.toBeInTheDocument();
+    expect(
+      page.queryByRole("heading", { name: "Vila Sol Scramble Live" }),
+    ).not.toBeInTheDocument();
+    expect(
+      page.queryByRole("heading", { name: "Overall Event Standings" }),
+    ).not.toBeInTheDocument();
   } finally {
     unmount();
     host.remove();

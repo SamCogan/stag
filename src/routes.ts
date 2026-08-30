@@ -7,6 +7,7 @@ import {
 import * as v from "valibot";
 
 import { teamIdSchema, type TeamId } from "./config/eventSchemas";
+import { STABLEFORD_EVENT_CODE } from "./features/stableford/config";
 
 export const APP_MODES = [
   "home",
@@ -66,9 +67,12 @@ const getEventCode = (
   requestedEvent: string | undefined,
 ): string => {
   if (mode.startsWith("stableford")) {
-    return "coollattin-stableford";
+    return STABLEFORD_EVENT_CODE;
   }
   if (requestedEvent === undefined || requestedEvent.length === 0) {
+    if (mode === "home") {
+      return STABLEFORD_EVENT_CODE;
+    }
     return golfModes.has(mode) ? "vilasol" : "stag2026";
   }
   return requestedEvent;

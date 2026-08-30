@@ -1,3 +1,4 @@
+import { GolfIcon } from "@phosphor-icons/react/Golf";
 import { ListNumbersIcon } from "@phosphor-icons/react/ListNumbers";
 import { UsersThreeIcon } from "@phosphor-icons/react/UsersThree";
 import useLocalStorageState from "use-local-storage-state";
@@ -19,7 +20,10 @@ import { ScrambleOrganizer } from "./features/scramble/ScrambleOrganizer";
 import { ScrambleScorecard } from "./features/scramble/ScrambleScorecard";
 import { useScrambleStore } from "./features/scramble/useScrambleStore";
 import { findStablefordPlayer } from "./features/stableford/auth";
-import { STABLEFORD_IDENTITY_STORAGE_KEY } from "./features/stableford/config";
+import {
+  STABLEFORD_EVENT_CODE,
+  STABLEFORD_IDENTITY_STORAGE_KEY,
+} from "./features/stableford/config";
 import { StablefordLeaderboard } from "./features/stableford/StablefordLeaderboard";
 import { StablefordLogin } from "./features/stableford/StablefordLogin";
 import { StablefordOrganizer } from "./features/stableford/StablefordOrganizer";
@@ -72,20 +76,42 @@ function App() {
     stableford.state.pickups,
     stableford.state.scores,
   ].some((record) => hasEntries(record));
-  const networkState = getNetworkState(
-    route.mode,
-    pub.networkState,
-    scramble.networkState,
-    stableford.networkState,
-  );
-
+  const isStablefordEvent = route.eventCode === STABLEFORD_EVENT_CODE;
+  const networkState = isStablefordEvent
+    ? stableford.networkState
+    : getNetworkState(
+        route.mode,
+        pub.networkState,
+        scramble.networkState,
+        stableford.networkState,
+      );
+  const stablefordAccess =
+    stablefordPlayer === undefined ? (
+      <StablefordLogin onAuthenticated={handleStablefordAuthentication} />
+    ) : (
+      <StablefordSessionCard onLogout={removeItem} player={stablefordPlayer} />
+    );
   return (
     <AppShell
       eventCode={route.eventCode}
       mode={route.mode}
       networkState={networkState}
     >
-      {route.mode === "home" && (
+      {route.mode === "home" && isStablefordEvent && (
+        <>
+          <Panel>
+            <SectionHeading
+              icon={GolfIcon}
+              title="Coollattin Individual Stableford"
+            />
+            <p className="text-sm text-base-content/70">
+              Live individual scoring, standings, and hole-by-hole results.
+            </p>
+          </Panel>
+          {stablefordAccess}
+        </>
+      )}
+      {route.mode === "home" && !isStablefordEvent && (
         <>
           <Panel>
             <SectionHeading icon={UsersThreeIcon} title="Live Visitor Board" />
@@ -97,16 +123,7 @@ function App() {
           </Panel>
           <div className="grid gap-4 lg:grid-cols-2">
             <TeamLogin />
-            {stablefordPlayer === undefined ? (
-              <StablefordLogin
-                onAuthenticated={handleStablefordAuthentication}
-              />
-            ) : (
-              <StablefordSessionCard
-                onLogout={removeItem}
-                player={stablefordPlayer}
-              />
-            )}
+            {stablefordAccess}
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
             <PubGolfLeaderboard
