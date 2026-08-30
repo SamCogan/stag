@@ -1,3 +1,46 @@
+@import "tailwindcss";
+@import "./App.css";
+
+@plugin "daisyui" {
+  themes: stag --default;
+  logs: false;
+}
+
+@plugin "daisyui/theme" {
+  name: "stag";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+  --color-base-100: #ffffff;
+  --color-base-200: #f7fbe8;
+  --color-base-300: #dce4c2;
+  --color-base-content: #1f2a1e;
+  --color-primary: #d8e7a9;
+  --color-primary-content: #243217;
+  --color-secondary: #fff8de;
+  --color-secondary-content: #33402d;
+  --color-accent: #5c683f;
+  --color-accent-content: #ffffff;
+  --color-neutral: #33402d;
+  --color-neutral-content: #ffffff;
+  --color-info: #5f84a2;
+  --color-info-content: #ffffff;
+  --color-success: #4f7d3b;
+  --color-success-content: #ffffff;
+  --color-warning: #d6a12e;
+  --color-warning-content: #241c0b;
+  --color-error: #b94a48;
+  --color-error-content: #ffffff;
+  --radius-selector: 0.75rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
 :root {
   font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
   line-height: 1.4;

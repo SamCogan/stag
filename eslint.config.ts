@@ -2,6 +2,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import type { Linter } from "eslint";
 import js from "@eslint/js";
 import prettierConfig from "eslint-config-prettier/flat";
+import betterTailwind from "eslint-plugin-better-tailwindcss";
 import { flatConfigs as importXFlatConfigs } from "eslint-plugin-import-x";
 import jest from "eslint-plugin-jest";
 import jestDom from "eslint-plugin-jest-dom";
@@ -65,6 +66,7 @@ export default defineConfig([
     files: ["src/**/*.{ts,tsx}"],
     extends: [
       js.configs.recommended,
+      betterTailwind.configs["recommended-error"],
       typescriptEslintConfigs.strictTypeChecked,
       typescriptEslintConfigs.stylisticTypeChecked,
       reactRecommended,
@@ -85,6 +87,10 @@ export default defineConfig([
       },
     },
     settings: {
+      "better-tailwindcss": {
+        entryPoint: "src/index.css",
+        tsconfig: "tsconfig.app.json",
+      },
       "import-x/core-modules": ["bun:test"],
       "import-x/resolver": {
         typescript: true,
@@ -105,6 +111,7 @@ export default defineConfig([
     files: ["src/App.tsx"],
     rules: {
       complexity: "off",
+      "better-tailwindcss/no-unknown-classes": "off",
       "max-lines": "off",
       "max-lines-per-function": "off",
       "max-statements": "off",

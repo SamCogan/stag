@@ -2,8 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 
 import { createRemoteStore } from "./firebaseStore";
 
-import "./App.css";
-
 const EVENT = {
   title: "Stag Pub Golf",
   holes: [
