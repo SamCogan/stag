@@ -8,6 +8,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { PUB_EVENT } from "../../config/pubGolf";
 import { getVilaSolHoles } from "../../config/vilaSol";
 
+import type { VilaSolHole } from "../../config/eventSchemas";
 import type { VilaSolLoopCombination } from "../../config/vilaSol";
 import type { StrokeState, TeamNames } from "../../state/golfState";
 
@@ -24,14 +25,24 @@ const formatToPar = (value: number): string => {
   return value > 0 ? `+${String(value)}` : String(value);
 };
 
-export const StrokeLeaderboard = ({
-  loopCombination,
-  state,
-  teamNames,
-}: StrokeLeaderboardProperties) => {
-  const holes = getVilaSolHoles(loopCombination);
-  const teams = getStrokeTeamStandings(state, holes);
-  const players = Object.entries(PUB_EVENT.teams)
+const formatGrossToPar = (value: number): string =>
+  value > 0 ? `+${String(value)}` : String(value);
+
+const getTeamRows = (state: StrokeState, holes: readonly VilaSolHole[]) =>
+  getStrokeTeamStandings(state, holes).map((team) => {
+    const entries = PUB_EVENT.teams[team.teamId].players.flatMap((player) =>
+      holes.flatMap((hole) => {
+        const gross = state.scores[strokeScoreKey(player.id, hole.id)];
+        return gross === undefined ? [] : [{ gross, par: hole.par }];
+      }),
+    );
+    const gross = entries.reduce((total, entry) => total + entry.gross, 0);
+    const grossPar = entries.reduce((total, entry) => total + entry.par, 0);
+    return { ...team, gross, grossToPar: gross - grossPar };
+  });
+
+const getPlayerRows = (state: StrokeState, holes: readonly VilaSolHole[]) =>
+  Object.entries(PUB_EVENT.teams)
     .flatMap(([teamId, team]) =>
       team.players.map((player) => {
         const completed = holes.flatMap((hole) => {
@@ -63,7 +74,17 @@ export const StrokeLeaderboard = ({
     )
     .toSorted(
       (left, right) => left.netToPar - right.netToPar || left.net - right.net,
-    );
+    )
+    .slice(0, 5);
+
+export const StrokeLeaderboard = ({
+  loopCombination,
+  state,
+  teamNames,
+}: StrokeLeaderboardProperties) => {
+  const holes = getVilaSolHoles(loopCombination);
+  const teams = getTeamRows(state, holes);
+  const players = getPlayerRows(state, holes);
 
   return (
     <>
@@ -84,6 +105,9 @@ export const StrokeLeaderboard = ({
                     ? "—"
                     : formatToPar(team.netToPar)}
                 </strong>
+                <p className="text-sm">
+                  Gross: {team.gross} ({formatGrossToPar(team.grossToPar)})
+                </p>
               </div>
             </article>
           ))}

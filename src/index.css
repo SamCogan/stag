@@ -1,5 +1,8 @@
 @import "tailwindcss";
-@import "./App.css";
+
+@theme {
+  --font-sans: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
+}
 
 @plugin "daisyui" {
   themes: stag --default;
@@ -11,18 +14,18 @@
   default: true;
   prefersdark: false;
   color-scheme: light;
-  --color-base-100: #ffffff;
-  --color-base-200: #f7fbe8;
-  --color-base-300: #dce4c2;
-  --color-base-content: #1f2a1e;
-  --color-primary: #d8e7a9;
-  --color-primary-content: #243217;
-  --color-secondary: #fff8de;
-  --color-secondary-content: #33402d;
-  --color-accent: #5c683f;
-  --color-accent-content: #ffffff;
-  --color-neutral: #33402d;
-  --color-neutral-content: #ffffff;
+  --color-base-100: #fcfff6;
+  --color-base-200: #edf4de;
+  --color-base-300: #cadab8;
+  --color-base-content: #1c2a1f;
+  --color-primary: #cfe59c;
+  --color-primary-content: #1f3118;
+  --color-secondary: #fff3d6;
+  --color-secondary-content: #233f2d;
+  --color-accent: #9fbe64;
+  --color-accent-content: #112818;
+  --color-neutral: #193622;
+  --color-neutral-content: #f9fce7;
   --color-info: #5f84a2;
   --color-info-content: #ffffff;
   --color-success: #4f7d3b;
@@ -31,7 +34,7 @@
   --color-warning-content: #241c0b;
   --color-error: #b94a48;
   --color-error-content: #ffffff;
-  --radius-selector: 0.75rem;
+  --radius-selector: 999px;
   --radius-field: 0.5rem;
   --radius-box: 1rem;
   --size-selector: 0.25rem;
@@ -39,37 +42,4 @@
   --border: 1px;
   --depth: 1;
   --noise: 0;
-}
-
-:root {
-  font-family: "Trebuchet MS", "Segoe UI", Tahoma, sans-serif;
-  line-height: 1.4;
-  font-weight: 400;
-  color: #1f2a1e;
-  background: radial-gradient(
-    circle at top,
-    #f6fbec 0%,
-    #f4f7e8 40%,
-    #ecf2dc 100%
-  );
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-}
-
-h1,
-h2,
-h3,
-p {
-  margin: 0;
 }

@@ -1,3 +1,4 @@
+import { ListNumbersIcon } from "@phosphor-icons/react/ListNumbers";
 import { UsersThreeIcon } from "@phosphor-icons/react/UsersThree";
 
 import { AppShell } from "./components/AppShell";
@@ -91,6 +92,12 @@ function App() {
             scrambleState={scramble.state}
             strokeState={stroke.state}
             teamNames={scramble.teamNames}
+          />
+          <PubGolfLeaderboard
+            icon={ListNumbersIcon}
+            state={pub.state}
+            teamNames={scramble.teamNames}
+            title="Team Leaderboard"
           />
         </>
       )}
